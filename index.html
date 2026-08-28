@@ -303,6 +303,62 @@
   .platform-note{margin-top:26px; font-family:var(--mono); font-size:12px; color:var(--gray-500); letter-spacing:.03em;}
   .platform-note b{color:var(--gray-100); font-weight:500;}
 
+  /* ---------- platform expandable details ---------- */
+  .platform-chip{cursor:pointer; transition:all .25s ease;}
+  .platform-chip.active{border-color:var(--white); background:var(--panel-2);}
+  .platform-chip.active .chip-label{color:var(--white);}
+  .platform-chip .chip-arrow{
+    position:absolute; top:16px; right:16px;
+    font-family:var(--mono); font-size:13px; color:var(--gray-600);
+    transition:transform .25s ease, color .25s ease;
+  }
+  .platform-chip.active .chip-arrow{transform:rotate(90deg); color:var(--white);}
+  .platform-detail{
+    max-height:0; overflow:hidden; transition:max-height .4s ease, opacity .3s ease;
+    opacity:0;
+  }
+  .platform-detail.open{max-height:800px; opacity:1;}
+  .platform-detail-inner{
+    margin-top:20px; border:1px solid var(--line-soft); background:var(--panel);
+    position:relative;
+  }
+  .pd-header{
+    padding:28px 32px 24px; border-bottom:1px solid var(--line-soft);
+  }
+  .pd-runtime{
+    font-family:var(--mono); font-size:11.5px; color:var(--gray-500);
+    letter-spacing:.04em; text-transform:uppercase; margin-bottom:10px;
+  }
+  .pd-title{
+    font-family:var(--disp); font-size:17px; color:var(--white); font-weight:500;
+    line-height:1.45;
+  }
+  .pd-body{padding:24px 32px 28px;}
+  .pd-features{
+    display:grid; grid-template-columns:1fr 1fr; gap:0;
+  }
+  .pd-feat{
+    display:flex; align-items:baseline; gap:10px;
+    padding:11px 0; border-bottom:1px solid var(--line-soft);
+    font-size:13.5px; color:var(--gray-300); line-height:1.45;
+  }
+  .pd-feat:nth-last-child(-n+2){border-bottom:none;}
+  .pd-feat::before{
+    content:''; width:4px; height:4px; border-radius:1px;
+    background:var(--gray-600); flex-shrink:0; margin-top:6px;
+  }
+  .pd-best{
+    margin-top:20px; padding:18px 24px;
+    border:1px solid var(--line-soft); background:var(--panel-2);
+    font-size:13.5px; color:var(--gray-300); line-height:1.5;
+  }
+  .pd-best b{color:var(--white); font-family:var(--mono); font-size:11px; letter-spacing:.04em; text-transform:uppercase; font-weight:500;}
+  @media (max-width:860px){
+    .pd-features{grid-template-columns:1fr;}
+    .pd-feat:last-child{border-bottom:none;}
+    .pd-feat:nth-last-child(2){border-bottom:1px solid var(--line-soft);}
+  }
+
   /* ---------- registry ---------- */
   .registry-stats{
     display:grid; grid-template-columns:repeat(4,1fr);
@@ -608,17 +664,125 @@ pipeline.run(stream=<span class="c3">"rtsp://cam-04"</span>)</div>
       <div class="section-head">
         <div class="eyebrow">Hardware-aware optimization</div>
         <h2 class="section-title">Same pipeline. Any silicon.</h2>
-        <p class="section-desc">Choose the platform a pipeline will run on, and GX compiles code tuned to it — not a generic build ported after the fact.</p>
+        <p class="section-desc">One inference pipeline, optimized for the hardware you already have — from Intel CPUs and NVIDIA GPUs to edge NPUs and heterogeneous CPU+accelerator systems.</p>
       </div>
 
       <div class="platform-strip">
-        <div class="platform-chip bracket"><span class="bl"></span><span class="br"></span><div class="chip-label">full-CPU</div><div class="chip-desc">general compute, no accelerator</div></div>
-        <div class="platform-chip bracket"><span class="bl"></span><span class="br"></span><div class="chip-label">full-GPU</div><div class="chip-desc">parallel inference, high throughput</div></div>
-        <div class="platform-chip bracket"><span class="bl"></span><span class="br"></span><div class="chip-label">CPU–GPU</div><div class="chip-desc">split pre/post-processing and inference</div></div>
-        <div class="platform-chip bracket"><span class="bl"></span><span class="br"></span><div class="chip-label">NPU</div><div class="chip-desc">dedicated neural accelerator</div></div>
-        <div class="platform-chip bracket"><span class="bl"></span><span class="br"></span><div class="chip-label">CPU–NPU</div><div class="chip-desc">edge-optimized, low-power inference</div></div>
+        <div class="platform-chip bracket" onclick="togglePlatform('cpu')" id="chip-cpu"><span class="bl"></span><span class="br"></span><div class="chip-label">full-CPU</div><div class="chip-desc">general compute, no accelerator</div><span class="chip-arrow">→</span></div>
+        <div class="platform-chip bracket" onclick="togglePlatform('gpu')" id="chip-gpu"><span class="bl"></span><span class="br"></span><div class="chip-label">full-GPU</div><div class="chip-desc">parallel inference, high throughput</div><span class="chip-arrow">→</span></div>
+        <div class="platform-chip bracket" onclick="togglePlatform('cpugpu')" id="chip-cpugpu"><span class="bl"></span><span class="br"></span><div class="chip-label">CPU–GPU</div><div class="chip-desc">split pre/post-processing and inference</div><span class="chip-arrow">→</span></div>
+        <div class="platform-chip bracket" onclick="togglePlatform('npu')" id="chip-npu"><span class="bl"></span><span class="br"></span><div class="chip-label">NPU</div><div class="chip-desc">dedicated neural accelerator</div><span class="chip-arrow">→</span></div>
+        <div class="platform-chip bracket" onclick="togglePlatform('cpunpu')" id="chip-cpunpu"><span class="bl"></span><span class="br"></span><div class="chip-label">CPU–NPU</div><div class="chip-desc">edge-optimized, low-power inference</div><span class="chip-arrow">→</span></div>
       </div>
+
+      <!-- Full-CPU detail -->
+      <div class="platform-detail" id="detail-cpu">
+        <div class="platform-detail-inner bracket">
+          <span class="bl"></span><span class="br"></span>
+          <div class="pd-header">
+            <div class="pd-runtime">Intel CPU · OpenVINO</div>
+            <div class="pd-title">Run the complete AI pipeline directly on Intel processors using Intel OpenVINO.</div>
+          </div>
+          <div class="pd-body">
+            <div class="pd-features">
+              <div class="pd-feat">CPU-native inference</div>
+              <div class="pd-feat">OpenVINO-optimized execution</div>
+              <div class="pd-feat">No dedicated GPU required</div>
+              <div class="pd-feat">Efficient deployment on Intel edge and server platforms</div>
+              <div class="pd-feat">Ideal for CPU-only environments and cost-sensitive deployments</div>
+            </div>
+            <div class="pd-best"><b>Best for</b><br>Edge gateways, industrial PCs, servers, and systems without dedicated accelerators.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full-GPU detail -->
+      <div class="platform-detail" id="detail-gpu">
+        <div class="platform-detail-inner bracket">
+          <span class="bl"></span><span class="br"></span>
+          <div class="pd-header">
+            <div class="pd-runtime">NVIDIA Jetson · GTX · RTX</div>
+            <div class="pd-title">Accelerate the complete inference pipeline on NVIDIA GPUs for high throughput and parallel execution.</div>
+          </div>
+          <div class="pd-body">
+            <div class="pd-features">
+              <div class="pd-feat">Supports NVIDIA Jetson, GTX, and RTX platforms</div>
+              <div class="pd-feat">GPU-accelerated inference</div>
+              <div class="pd-feat">Parallel inference execution</div>
+              <div class="pd-feat">High throughput for demanding workloads</div>
+              <div class="pd-feat">Suitable for multi-stream and real-time applications</div>
+            </div>
+            <div class="pd-best"><b>Best for</b><br>Computer vision, video analytics, robotics, and high-throughput AI workloads.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CPU-GPU detail -->
+      <div class="platform-detail" id="detail-cpugpu">
+        <div class="platform-detail-inner bracket">
+          <span class="bl"></span><span class="br"></span>
+          <div class="pd-header">
+            <div class="pd-runtime">Intel CPU + NVIDIA GPU</div>
+            <div class="pd-title">Distribute workloads intelligently between the CPU and GPU to maximize overall system performance.</div>
+          </div>
+          <div class="pd-body">
+            <div class="pd-features">
+              <div class="pd-feat">Intel CPU + NVIDIA GPU processing</div>
+              <div class="pd-feat">Split pre-processing / inference / post-processing</div>
+              <div class="pd-feat">GPU handles compute-intensive inference</div>
+              <div class="pd-feat">CPU handles data preparation and result processing</div>
+              <div class="pd-feat">Better resource utilization and pipeline concurrency</div>
+            </div>
+            <div class="pd-best"><b>Best for</b><br>High-performance systems where CPU and GPU resources need to work together efficiently.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NPU detail -->
+      <div class="platform-detail" id="detail-npu">
+        <div class="platform-detail-inner bracket">
+          <span class="bl"></span><span class="br"></span>
+          <div class="pd-header">
+            <div class="pd-runtime">Rockchip RKNN · NovaTek · Kneron · More</div>
+            <div class="pd-title">Deploy AI inference directly on dedicated Neural Processing Units (NPUs) built for edge computing.</div>
+          </div>
+          <div class="pd-body">
+            <div class="pd-features">
+              <div class="pd-feat">Supports Rockchip RKNN, NovaTek, Kneron, and other NPU platforms</div>
+              <div class="pd-feat">Dedicated neural acceleration</div>
+              <div class="pd-feat">Low-power AI inference</div>
+              <div class="pd-feat">Hardware-optimized execution</div>
+              <div class="pd-feat">Designed for compact and resource-constrained edge devices</div>
+            </div>
+            <div class="pd-best"><b>Best for</b><br>Embedded devices, smart cameras, IoT, consumer electronics, and battery-powered systems.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CPU-NPU detail -->
+      <div class="platform-detail" id="detail-cpunpu">
+        <div class="platform-detail-inner bracket">
+          <span class="bl"></span><span class="br"></span>
+          <div class="pd-header">
+            <div class="pd-runtime">CPU + Edge NPU</div>
+            <div class="pd-title">Combine general-purpose CPU processing with dedicated NPU acceleration for low-power, edge-optimized inference.</div>
+          </div>
+          <div class="pd-body">
+            <div class="pd-features">
+              <div class="pd-feat">CPU + NPU heterogeneous processing</div>
+              <div class="pd-feat">CPU handles pre/post-processing and system tasks</div>
+              <div class="pd-feat">NPU handles neural-network inference</div>
+              <div class="pd-feat">Reduced CPU workload</div>
+              <div class="pd-feat">Low-power, efficient AI execution</div>
+              <div class="pd-feat">Optimized for real-time edge applications</div>
+            </div>
+            <div class="pd-best"><b>Best for</b><br>Smart cameras, robotics, embedded AI, industrial edge devices, and power-constrained deployments.</div>
+          </div>
+        </div>
+      </div>
+
       <p class="platform-note">Target selected once, per pipeline — <b>compilation, memory layout and kernel choice adapt automatically.</b></p>
+      <p class="platform-note" style="margin-top:12px;">Your application stays consistent while the execution layer adapts to the silicon — <b>CPU, GPU, NPU, or heterogeneous combinations.</b></p>
     </div>
   </section>
 
@@ -815,6 +979,23 @@ pipeline.run(stream=<span class="c3">"rtsp://cam-04"</span>)</div>
     try{ localStorage.setItem('gx-arc-theme', next); }catch(e){}
     document.getElementById('siteThemeIcon').textContent = next === 'dark' ? '☀' : '☾';
   }
+  function togglePlatform(id){
+    var detail = document.getElementById('detail-' + id);
+    var chip = document.getElementById('chip-' + id);
+    var wasOpen = detail.classList.contains('open');
+
+    // close all
+    document.querySelectorAll('.platform-detail').forEach(function(d){ d.classList.remove('open'); });
+    document.querySelectorAll('.platform-chip').forEach(function(c){ c.classList.remove('active'); });
+
+    // if it wasn't open, open it
+    if(!wasOpen){
+      detail.classList.add('open');
+      chip.classList.add('active');
+      setTimeout(function(){ detail.scrollIntoView({behavior:'smooth', block:'nearest'}); }, 80);
+    }
+  }
+
   (function(){
     var current = document.documentElement.getAttribute('data-theme') || 'dark';
     document.addEventListener('DOMContentLoaded', function(){

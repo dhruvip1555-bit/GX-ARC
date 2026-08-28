@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GX-Arc — Compose Vision. Create Intelligence.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  (function(){
+    var saved = null;
+    try{ saved = localStorage.getItem('gx-arc-theme'); }catch(e){}
+    var theme = saved || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+<style>
+  :root{
+    --bg:#09090b;
+    --panel:#111114;
+    --panel-2:#18181c;
+    --line:#28282d;
+    --line-soft:#1c1c20;
+    --gray-600:#57585f;
+    --gray-500:#7a7b83;
+    --gray-300:#a9abb2;
+    --gray-100:#dcdde0;
+    --white:#f3f3f4;
+    --focus:#e9e9ea;
+    --mono: 'JetBrains Mono', monospace;
+    --disp: 'Space Grotesk', sans-serif;
+    --body: 'Inter', sans-serif;
+    --grid-rgb: 255,255,255;
+    --header-bg: rgba(9,9,11,0.82);
+    --overlay-bg: rgba(6,6,7,0.72);
+  }
+  html[data-theme="light"]{
+    --bg:#f5f5f4;
+    --panel:#ffffff;
+    --panel-2:#ececea;
+    --line:#dcdcda;
+    --line-soft:#e6e6e4;
+    --gray-600:#8a8b8f;
+    --gray-500:#6c6d72;
+    --gray-300:#48494d;
+    --gray-100:#242427;
+    --white:#0c0c0d;
+    --focus:#0c0c0d;
+    --grid-rgb: 9,9,11;
+    --header-bg: rgba(245,245,244,0.82);
+    --overlay-bg: rgba(20,20,20,0.55);
+  }
+  html{transition:background-color .25s ease;}
+  body{transition:background-color .25s ease, color .25s ease;}
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--gray-100);
+    font-family:var(--body);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{color:inherit; text-decoration:none;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 32px;}
+
+  ::selection{background:var(--white); color:var(--bg);}
+
+  /* ---------- background grid texture ---------- */
+  .grid-bg{
+    position:fixed; inset:0; z-index:-1;
+    background-image:
+      linear-gradient(to right, rgba(var(--grid-rgb),0.028) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(var(--grid-rgb),0.028) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+  }
+
+  /* ---------- nav ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:var(--header-bg);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 32px; max-width:1180px; margin:0 auto;
+  }
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand-badge{height:34px; width:34px; border-radius:8px; border:1px solid var(--line); object-fit:cover;}
+  .brand-name{font-family:var(--disp); font-size:16px; font-weight:600; letter-spacing:0.02em; color:var(--white);}
+  .brand-name b{font-weight:700;}
+  nav ul{display:flex; gap:36px; list-style:none;}
+  nav ul li a{
+    font-family:var(--mono); font-size:12px; letter-spacing:0.05em; text-transform:uppercase;
+    color:var(--gray-500); transition:color .2s ease; position:relative;
+  }
+  nav ul li a:hover{color:var(--white);}
+  .nav-cta{
+    font-family:var(--mono); font-size:12px; letter-spacing:0.04em;
+    border:1px solid var(--line); padding:9px 16px; border-radius:2px;
+    color:var(--gray-100); white-space:nowrap;
+    transition: all .2s ease;
+  }
+  .nav-cta:hover{border-color:var(--white); color:var(--white);}
+  .site-theme-btn{
+    width:36px; height:36px; flex-shrink:0; margin-left:14px;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--line); border-radius:2px; background:transparent;
+    color:var(--gray-100); font-size:15px; line-height:1; cursor:pointer;
+    transition:all .2s ease;
+  }
+  .site-theme-btn:hover{border-color:var(--white); color:var(--white);}
+  .nav-right{display:flex; align-items:center;}
+  .nav-links-mobile{display:none;}
+
+  /* ---------- corner-bracket frame, the signature device ---------- */
+  .bracket{position:relative;}
+  .bracket::before,.bracket::after,
+  .bracket .bl,.bracket .br{
+    content:''; position:absolute; width:14px; height:14px;
+    border-color:var(--gray-500); opacity:.85; transition: border-color .25s ease, opacity .25s ease;
+  }
+  .bracket::before{ top:-1px; left:-1px; border-top:1.5px solid; border-left:1.5px solid;}
+  .bracket::after{ top:-1px; right:-1px; border-top:1.5px solid; border-right:1.5px solid;}
+  .bracket .bl{ bottom:-1px; left:-1px; border-bottom:1.5px solid; border-left:1.5px solid;}
+  .bracket .br{ bottom:-1px; right:-1px; border-bottom:1.5px solid; border-right:1.5px solid;}
+  .bracket:hover::before,.bracket:hover::after,.bracket:hover .bl,.bracket:hover .br{
+    border-color:var(--white); opacity:1;
+  }
+  .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.04em;
+    color:var(--gray-500); text-transform:uppercase;
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:120px 0 100px;
+    position:relative;
+  }
+  .hero-eyebrow{
+    display:flex; align-items:center; gap:10px; margin-bottom:28px;
+    font-family:var(--mono); font-size:12px; color:var(--gray-500); letter-spacing:.06em; text-transform:uppercase;
+  }
+  .hero-eyebrow .dot{width:6px; height:6px; border-radius:50%; background:var(--white); animation:pulse 2.2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+  h1.hero-title{
+    font-family:var(--disp); font-weight:700;
+    font-size:clamp(40px, 6.4vw, 84px);
+    line-height:1.03; letter-spacing:-0.01em;
+    color:var(--white);
+    max-width:900px;
+  }
+  h1.hero-title .fade{color:var(--gray-500);}
+  .hero-sub{
+    margin-top:26px; max-width:560px; font-size:17px; color:var(--gray-300); font-weight:400;
+  }
+  .hero-actions{display:flex; gap:14px; margin-top:44px; flex-wrap:wrap;}
+  .btn-primary, .btn-ghost{
+    font-family:var(--mono); font-size:12.5px; letter-spacing:.03em; text-transform:uppercase;
+    padding:14px 24px; border-radius:2px; display:inline-flex; align-items:center; gap:8px;
+    transition:all .2s ease;
+  }
+  .btn-primary{background:var(--white); color:var(--bg); font-weight:500;}
+  .btn-primary:hover{background:var(--gray-100);}
+  .btn-ghost{border:1px solid var(--line); color:var(--gray-100);}
+  .btn-ghost:hover{border-color:var(--white); color:var(--white);}
+
+  /* viewfinder visual */
+  .viewfinder{
+    margin-top:88px; position:relative;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, var(--panel), var(--bg));
+    border-radius:4px; overflow:hidden;
+  }
+  .viewfinder-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; border-bottom:1px solid var(--line-soft);
+    background:var(--panel-2); position:relative; z-index:3;
+  }
+  .viewfinder-frame{position:relative; width:100%; padding-bottom:53.8%; height:0;}
+  .viewfinder-video{
+    position:absolute; inset:0; width:100%; height:100%;
+    object-fit:cover; object-position:top center;
+  }
+  .theme-toggle{
+    display:flex; align-items:center; gap:7px;
+    font-family:var(--mono); font-size:11px; letter-spacing:.03em; color:var(--gray-300);
+    background:transparent; border:1px solid var(--line); padding:7px 12px; border-radius:2px;
+    cursor:pointer; transition:all .2s ease;
+  }
+  .theme-toggle:hover{border-color:var(--white); color:var(--white);}
+  .viewer-actions{display:flex; align-items:center; gap:10px;}
+  .close-btn{color:var(--gray-500);}
+  .close-btn:hover{color:var(--white); border-color:var(--white);}
+  .viewer-hidden{display:none;}
+  #viewer{margin-top:56px;}
+  .viewer-placeholder{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:var(--panel); font-family:var(--mono); font-size:13px; color:var(--gray-500); letter-spacing:.03em;
+  }
+  .viewfinder .frame-label{
+    font-family:var(--mono); font-size:11px; color:var(--gray-500); letter-spacing:.04em;
+  }
+  .viewfinder .frame-label span{color:var(--white);}
+  .viewfinder .rec{
+    position:absolute; top:16px; right:20px; display:flex; align-items:center; gap:8px; z-index:3;
+    font-family:var(--mono); font-size:11px; color:var(--gray-500); letter-spacing:.04em;
+  }
+  .viewfinder .rec i{width:6px; height:6px; border-radius:50%; background:#e35b5b; display:inline-block; opacity:.9; animation:pulse 1.4s infinite;}
+  .scanline{
+    position:absolute; left:0; right:0; height:1px;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+    animation:scan 4.5s linear infinite; z-index:2;
+  }
+  @keyframes scan{0%{top:6%;}50%{top:92%;}100%{top:6%;}}
+  .node{
+    position:absolute; border:1px solid var(--gray-600); border-radius:2px;
+    display:flex; align-items:flex-end; padding:6px 8px;
+  }
+  .node span{font-family:var(--mono); font-size:10.5px; color:var(--gray-300); letter-spacing:.03em;}
+  .node.n1{top:22%; left:8%; width:130px; height:96px;}
+  .node.n2{top:38%; left:32%; width:170px; height:150px; border-color:var(--gray-300);}
+  .node.n3{top:16%; left:58%; width:110px; height:80px;}
+  .node.n4{top:52%; left:74%; width:150px; height:110px;}
+  .node .conf{position:absolute; top:-1px; right:-1px; transform:translateY(-100%); background:var(--white); color:var(--bg); font-family:var(--mono); font-size:9.5px; padding:2px 5px; font-weight:500;}
+
+  /* ---------- section shell ---------- */
+  section{padding:110px 0; border-top:1px solid var(--line-soft);}
+  .section-head{max-width:640px; margin-bottom:64px;}
+  .eyebrow{
+    font-family:var(--mono); font-size:12px; color:var(--gray-500); letter-spacing:.08em; text-transform:uppercase; margin-bottom:16px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{content:''; width:22px; height:1px; background:var(--gray-600);}
+  .section-title{
+    font-family:var(--disp); font-weight:600; font-size:clamp(28px,3.4vw,42px); color:var(--white); letter-spacing:-0.01em;
+  }
+  .section-desc{margin-top:16px; color:var(--gray-500); font-size:15.5px; max-width:520px;}
+
+  /* ---------- GX / Arc meaning ---------- */
+  .meaning-grid{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line-soft); border:1px solid var(--line-soft); margin-top:8px;}
+  .meaning-col{background:var(--bg); padding:44px 40px;}
+  .meaning-letter{font-family:var(--disp); font-size:80px; font-weight:700; color:var(--white); line-height:1;}
+  .meaning-list{margin-top:26px; display:flex; flex-direction:column; gap:14px;}
+  .meaning-item{display:flex; align-items:baseline; gap:14px; font-size:14.5px; color:var(--gray-300);}
+  .meaning-item b{font-family:var(--mono); font-size:11px; color:var(--gray-600); width:16px;}
+  .reva-line{margin-top:30px; padding-top:30px; border-top:1px solid var(--line-soft); font-size:15px; color:var(--gray-300);}
+  .reva-line b{color:var(--white); font-family:var(--disp);}
+
+  /* ---------- products ---------- */
+  .products{display:grid; grid-template-columns:1fr 1fr; gap:28px;}
+  .product-card{
+    position:relative; padding:38px 34px 34px; background:var(--panel);
+    border:1px solid var(--line-soft);
+  }
+  .product-card .index{font-family:var(--mono); font-size:11px; color:var(--gray-600); letter-spacing:.05em;}
+  .product-card h3{font-family:var(--disp); font-size:27px; color:var(--white); margin-top:14px; font-weight:600;}
+  .product-card .desc{margin-top:12px; color:var(--gray-500); font-size:14.5px; max-width:420px;}
+  .pipeline-mini{
+    margin-top:30px; display:flex; flex-direction:column; gap:0;
+  }
+  .pipeline-row{
+    display:flex; align-items:center; gap:16px; padding:16px 0;
+    border-top:1px solid var(--line-soft);
+  }
+  .pipeline-row:first-child{border-top:1px solid var(--line-soft);}
+  .pipeline-row .stage{font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--gray-600); width:96px; flex-shrink:0;}
+  .pipeline-row .content{font-size:14px; color:var(--gray-100);}
+  .pipeline-row .content small{display:block; color:var(--gray-600); font-size:12px; margin-top:3px; font-family:var(--mono);}
+  .product-cta{margin-top:30px; display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px; color:var(--gray-300); letter-spacing:.03em;}
+  .product-cta:hover{color:var(--white);}
+  .arrow{transition:transform .2s ease;}
+  .product-cta:hover .arrow{transform:translateX(4px);}
+
+  /* ---------- flow: build -> dry run -> generate -> deploy ---------- */
+  .flow{display:grid; grid-template-columns:repeat(4, 1fr); gap:1px; background:var(--line-soft); border:1px solid var(--line-soft);}
+  .flow-step{background:var(--bg); padding:32px 26px; position:relative;}
+  .flow-step .num{font-family:var(--mono); font-size:11px; color:var(--gray-600);}
+  .flow-step h4{font-family:var(--disp); font-size:18px; color:var(--white); margin-top:16px; font-weight:600;}
+  .flow-step p{margin-top:10px; font-size:13.5px; color:var(--gray-500); line-height:1.55;}
+  .flow-step .code-tag{
+    margin-top:18px; display:inline-block; font-family:var(--mono); font-size:10.5px;
+    color:var(--gray-600); border:1px solid var(--line); padding:4px 8px; border-radius:2px;
+  }
+  .flow-arrow{
+    position:absolute; right:-13px; top:32px; z-index:2; color:var(--gray-600); font-family:var(--mono); font-size:14px;
+    background:var(--bg); width:24px; height:24px; display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- platforms ---------- */
+  .platform-strip{display:flex; flex-wrap:wrap; gap:14px; margin-top:8px;}
+  .platform-chip{
+    border:1px solid var(--line); padding:16px 22px; display:flex; flex-direction:column; gap:8px;
+    min-width:150px; flex:1;
+    position:relative; background:var(--panel);
+  }
+  .platform-chip .chip-label{font-family:var(--mono); font-size:13px; color:var(--white); letter-spacing:.02em;}
+  .platform-chip .chip-desc{font-size:12px; color:var(--gray-600);}
+  .platform-note{margin-top:26px; font-family:var(--mono); font-size:12px; color:var(--gray-500); letter-spacing:.03em;}
+  .platform-note b{color:var(--gray-100); font-weight:500;}
+
+  /* ---------- registry ---------- */
+  .registry-stats{
+    display:grid; grid-template-columns:repeat(4,1fr);
+    border:1px solid var(--line-soft); background:var(--panel);
+  }
+  .stat{padding:32px 28px; border-left:1px solid var(--line-soft);}
+  .stat:first-child{border-left:none;}
+  .stat-num{font-family:var(--disp); font-size:40px; font-weight:700; color:var(--white); line-height:1;}
+  .stat-label{margin-top:10px; font-family:var(--mono); font-size:11.5px; color:var(--gray-500); letter-spacing:.03em;}
+
+  .category-grid{
+    margin-top:28px; display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+    background:var(--line-soft); border:1px solid var(--line-soft);
+  }
+  .category-card{background:var(--bg); padding:30px 26px;}
+  .cat-index{font-family:var(--mono); font-size:11px; color:var(--gray-600); letter-spacing:.05em;}
+  .category-card h4{font-family:var(--disp); font-size:19px; color:var(--white); margin-top:14px; font-weight:600;}
+  .category-card p{margin-top:10px; font-size:13.5px; color:var(--gray-500); line-height:1.55;}
+
+  .custom-train{
+    margin-top:56px; border:1px solid var(--line-soft); background:var(--panel);
+    padding:40px 44px; display:flex; align-items:center; justify-content:space-between; gap:40px; flex-wrap:wrap;
+  }
+  .custom-train-text h3{font-family:var(--disp); font-size:23px; color:var(--white); font-weight:600; max-width:520px;}
+  .custom-train-text p{margin-top:12px; color:var(--gray-500); font-size:14px; max-width:480px;}
+
+  @media (max-width:860px){
+    .registry-stats{grid-template-columns:1fr 1fr;}
+    .stat:nth-child(3){border-left:none;}
+    .category-grid{grid-template-columns:1fr;}
+  }
+
+  /* ---------- contact modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; z-index:200; display:none;
+    align-items:center; justify-content:center;
+    background:var(--overlay-bg); backdrop-filter:blur(3px);
+    padding:24px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-panel{
+    position:relative; width:100%; max-width:480px;
+    background:var(--panel); border:1px solid var(--line); border-radius:4px;
+    max-height:88vh; overflow-y:auto;
+  }
+  .modal-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 22px; border-bottom:1px solid var(--line-soft); background:var(--panel-2);
+    position:sticky; top:0; z-index:2;
+  }
+  .modal-header .close-btn{padding:6px 10px;}
+  .modal-form{padding:24px 26px 26px; display:flex; flex-direction:column; gap:16px;}
+  .modal-form label{
+    display:flex; flex-direction:column; gap:8px;
+    font-family:var(--mono); font-size:11.5px; color:var(--gray-500); letter-spacing:.03em; text-transform:uppercase;
+  }
+  .modal-form input, .modal-form textarea{
+    font-family:var(--body); font-size:14px; color:var(--white);
+    background:var(--bg); border:1px solid var(--line); border-radius:2px;
+    padding:11px 13px; text-transform:none; letter-spacing:normal; resize:vertical;
+  }
+  .modal-form input:focus, .modal-form textarea:focus{outline:none; border-color:var(--white);}
+  .modal-checkbox{
+    flex-direction:row; align-items:center; gap:10px; text-transform:none;
+    font-family:var(--body); font-size:13px; color:var(--gray-300); letter-spacing:normal;
+  }
+  .modal-checkbox input{width:auto; padding:0;}
+  .modal-actions{display:flex; gap:12px; margin-top:6px;}
+  .modal-actions button{cursor:pointer; border:none; font-family:var(--mono);}
+  .modal-actions .btn-ghost{background:transparent; border:1px solid var(--line);}
+  .modal-status{font-family:var(--mono); font-size:12px; color:var(--gray-300); min-height:14px;}
+  .modal-status.success{color:var(--white);}
+
+  /* ---------- code preview panel ---------- */
+  .code-panel{
+    margin-top:64px; border:1px solid var(--line-soft); background:var(--panel); border-radius:4px; overflow:hidden;
+  }
+  .code-top{
+    display:flex; align-items:center; justify-content:space-between; padding:12px 18px;
+    border-bottom:1px solid var(--line-soft); background:var(--panel-2);
+  }
+  .code-tabs{display:flex; gap:18px; font-family:var(--mono); font-size:11.5px; color:var(--gray-600);}
+  .code-tabs .active{color:var(--white); border-bottom:1.5px solid var(--white); padding-bottom:10px; margin-bottom:-11px;}
+  .code-dots{display:flex; gap:6px;}
+  .code-dots span{width:8px; height:8px; border-radius:50%; background:var(--line);}
+  .code-body{padding:24px 26px; font-family:var(--mono); font-size:12.5px; line-height:1.85; color:var(--gray-300); overflow-x:auto;}
+  .code-body .c1{color:var(--gray-600);}
+  .code-body .c2{color:var(--white);}
+  .code-body .c3{color:var(--gray-500);}
+  .run-note{
+    margin-top:40px; display:flex; align-items:center; gap:10px;
+    font-family:var(--mono); font-size:12px; color:var(--gray-500); letter-spacing:.03em;
+  }
+  .dot-live{width:6px; height:6px; border-radius:50%; background:#e35b5b; animation:pulse 1.4s infinite;}
+  .run-video{
+    margin-top:18px; border:1px solid var(--line-soft); border-radius:4px; overflow:hidden;
+    background:var(--panel);
+    display:flex; justify-content:center; padding:18px;
+  }
+  .run-video video{display:block; width:100%; max-width:640px; height:auto; border-radius:2px;}
+
+  /* ---------- CTA / footer ---------- */
+  .cta-section{text-align:left; padding:120px 0;}
+  .cta-title{font-family:var(--disp); font-weight:600; font-size:clamp(32px,4.6vw,56px); color:var(--white); max-width:760px; letter-spacing:-0.01em;}
+  footer{border-top:1px solid var(--line-soft); padding:56px 0 40px;}
+  .foot-grid{display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:40px;}
+  .foot-brand{display:flex; align-items:center; gap:10px;}
+  .foot-brand .brand-badge{height:26px; width:26px; border-radius:6px; opacity:1;}
+  .foot-brand span{font-family:var(--disp); font-size:14px; color:var(--gray-300);}
+  .foot-links{display:flex; gap:56px; flex-wrap:wrap;}
+  .foot-col h5{font-family:var(--mono); font-size:11px; color:var(--gray-600); text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px;}
+  .foot-col a{display:block; font-size:13.5px; color:var(--gray-400,var(--gray-300)); margin-bottom:10px;}
+  .foot-col a:hover{color:var(--white);}
+  .foot-bottom{margin-top:56px; padding-top:24px; border-top:1px solid var(--line-soft); display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--gray-600); flex-wrap:wrap; gap:10px;}
+
+  @media (max-width:860px){
+    nav ul{display:none;}
+    .products{grid-template-columns:1fr;}
+    .meaning-grid{grid-template-columns:1fr;}
+    .flow{grid-template-columns:1fr 1fr;}
+    .flow-arrow{display:none;}
+    .viewfinder{height:auto; padding:20px 0 120px;}
+    .node{position:static; width:auto !important; height:auto !important; margin:10px 20px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<header>
+  <nav>
+    <a href="#" class="brand">
+      <img src="logo-badge.png" alt="GX-Arc" class="brand-badge" id="navLogo">
+      <span class="brand-name">GX-<b>Arc</b></span>
+    </a>
+    <ul>
+      <li><a href="#products">Products</a></li>
+      <li><a href="#pipeline">Pipeline</a></li>
+      <li><a href="#registry">Models</a></li>
+      <li><a href="#platforms">Platforms</a></li>
+      <li><a href="#meaning">About</a></li>
+    </ul>
+    <div class="nav-right">
+    <a href="#" class="nav-cta" onclick="openModal(event,'Request Access')">Request Access</a>
+      <button class="site-theme-btn" id="siteThemeBtn" onclick="toggleSiteTheme()" aria-label="Toggle site theme">
+        <span id="siteThemeIcon">☀</span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero" style="border-top:none; padding-top:100px;">
+    <div class="wrap">
+      <div class="hero-eyebrow"><span class="dot"></span> Industrial & Vision AI Platform</div>
+      <h1 class="hero-title">Compose vision.<br><span class="fade">Create</span> intelligence.</h1>
+      <p class="hero-sub">GX-Arc turns computer vision from a coding problem into a building problem — drag together a pipeline, or simply describe the task, and ship hardware-optimized production code.</p>
+      <div class="hero-actions">
+        <a href="#products" class="btn-primary">Explore Products →</a>
+        <a href="#pipeline" class="btn-ghost">See a pipeline run</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEANING -->
+  <section id="meaning">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Identity</div>
+        <h2 class="section-title">Two letters. One discipline.</h2>
+        <p class="section-desc">GX is the engine — the way a pipeline is composed, extended and run anywhere. Arc is the intelligence that composes it.</p>
+      </div>
+      <div class="meaning-grid bracket">
+        <span class="bl"></span><span class="br"></span>
+        <div class="meaning-col">
+          <div class="meaning-letter">G</div>
+          <div class="meaning-list">
+            <div class="meaning-item"><b>01</b> Generative — pipelines assembled, not hand-written</div>
+            <div class="meaning-item"><b>02</b> Genius — models that reason about what they see</div>
+            <div class="meaning-item"><b>03</b> Generational — built to outlast one model cycle</div>
+          </div>
+        </div>
+        <div class="meaning-col">
+          <div class="meaning-letter">X</div>
+          <div class="meaning-list">
+            <div class="meaning-item"><b>01</b> Extensible — every node is a swappable part</div>
+            <div class="meaning-item"><b>02</b> Execute — from canvas straight to production code</div>
+            <div class="meaning-item"><b>03</b> Evolve — pipelines that improve as models do</div>
+          </div>
+        </div>
+      </div>
+      <div class="reva-line">Arc — <b>your intelligent AI identity.</b> The reasoning layer inside GX Agent that reads a task in plain language and writes the pipeline behind it.</div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section id="products">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Products</div>
+        <h2 class="section-title">Two ways to reach the same pipeline.</h2>
+        <p class="section-desc">Build by hand for full control, or describe the task and let Arc build it with you. Both end in the same place: a working, exportable computer-vision pipeline.</p>
+      </div>
+
+      <div class="products">
+        <div class="product-card bracket">
+          <span class="bl"></span><span class="br"></span>
+          <div class="index">01 / STUDIO</div>
+          <h3>GX Studio</h3>
+          <p class="desc">A drag-and-drop canvas for building IVA and computer-vision pipelines node by node.</p>
+          <div class="pipeline-mini">
+            <div class="pipeline-row"><div class="stage">Sees</div><div class="content">Every node on the canvas — inputs, models, transforms<small>drag / connect / configure</small></div></div>
+            <div class="pipeline-row"><div class="stage">Understands</div><div class="content">How data shape and requirements flow between nodes<small>type-checked connections</small></div></div>
+            <div class="pipeline-row"><div class="stage">Does</div><div class="content">Dry-runs the graph, then exports optimized code<small>Python / C++ · platform-aware</small></div></div>
+          </div>
+          <a href="#viewer" class="product-cta" onclick="showViewer('studio')">Open GX Studio <span class="arrow">→</span></a>
+        </div>
+
+        <div class="product-card bracket">
+          <span class="bl"></span><span class="br"></span>
+          <div class="index">02 / AGENT</div>
+          <h3>GX Agent</h3>
+          <p class="desc">Describe a task in natural language. Arc assembles the same class of pipeline for you.</p>
+          <div class="pipeline-mini">
+            <div class="pipeline-row"><div class="stage">Sees</div><div class="content">The task as written — intent, constraints, target platform<small>plain-language query</small></div></div>
+            <div class="pipeline-row"><div class="stage">Understands</div><div class="content">Which nodes and models satisfy the request<small>maps intent → graph</small></div></div>
+            <div class="pipeline-row"><div class="stage">Does</div><div class="content">Builds the pipeline on canvas, ready to inspect and run<small>editable in GX Studio</small></div></div>
+          </div>
+          <a href="#viewer" class="product-cta" onclick="showViewer('agent')">Try GX Agent <span class="arrow">→</span></a>
+        </div>
+      </div>
+
+      <div id="viewer" class="viewfinder bracket viewer-hidden">
+        <span class="bl"></span><span class="br"></span>
+        <div class="viewfinder-bar">
+          <div class="frame-label" id="viewerLabel">GXP_01 <span>· built in GX Studio</span></div>
+          <div class="viewer-actions">
+            <button class="theme-toggle" id="themeToggleBtn" onclick="toggleStudioShot()" aria-label="Toggle canvas theme">
+              <span id="toggleIcon">☾</span> <span id="toggleLabel">Dark canvas</span>
+            </button>
+            <button class="theme-toggle close-btn" onclick="closeViewer()" aria-label="Close preview">
+              ✕ Close
+            </button>
+          </div>
+        </div>
+        <div class="viewfinder-frame">
+          <img id="studioShot" class="viewfinder-video" src="studio-dark.png" alt="GX Studio canvas showing an object detection pipeline">
+          <div id="agentPlaceholder" class="viewer-placeholder" style="display:none;">
+            <span>GX Agent screenshots coming soon</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PIPELINE FLOW -->
+  <section id="pipeline">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">From canvas to hardware</div>
+        <h2 class="section-title">One pipeline, four stages.</h2>
+        <p class="section-desc">What you build in the UI is what ships — inspected, tested, and compiled for the exact hardware it will run on.</p>
+      </div>
+
+      <div class="flow">
+        <div class="flow-step"><div class="num">01</div><h4>Build</h4><p>Compose the pipeline visually in GX Studio, or generate it with GX Agent.</p><span class="code-tag">canvas</span><div class="flow-arrow">→</div></div>
+        <div class="flow-step"><div class="num">02</div><h4>Dry run</h4><p>Select real inputs and models per node, and run the graph live in the UI.</p><span class="code-tag">preview</span><div class="flow-arrow">→</div></div>
+        <div class="flow-step"><div class="num">03</div><h4>Generate</h4><p>Emit production-ready code in Python or C++ straight from the graph.</p><span class="code-tag">codegen</span><div class="flow-arrow">→</div></div>
+        <div class="flow-step"><div class="num">04</div><h4>Deploy</h4><p>Pick the target platform — the output is compiled and tuned for it.</p><span class="code-tag">hardware-aware</span></div>
+      </div>
+
+      <div class="code-panel bracket">
+        <span class="bl"></span><span class="br"></span>
+        <div class="code-top">
+          <div class="code-tabs"><span class="active">pipeline_export.py</span><span>pipeline_export.cpp</span></div>
+          <div class="code-dots"><span></span><span></span><span></span></div>
+        </div>
+        <div class="code-body"><span class="c1"># generated by GX Studio — target: CPU-GPU</span><br>
+<span class="c2">pipeline</span> = gx.load(<span class="c3">"warehouse_inspection.gxp"</span>)<br>
+pipeline.set_target(<span class="c3">"cpu-gpu"</span>, precision=<span class="c3">"fp16"</span>)<br>
+<span class="c1"># nodes: input → segmentation → tracker → export</span><br>
+pipeline.compile(optimize=<span class="c2">True</span>)<br>
+pipeline.run(stream=<span class="c3">"rtsp://cam-04"</span>)</div>
+      </div>
+
+      <div class="run-note">
+        <span class="dot-live"></span> Recorded run — the exact graph above, executing in GX Studio
+      </div>
+      <div class="run-video bracket">
+        <span class="bl"></span><span class="br"></span>
+        <video autoplay muted loop playsinline>
+          <source src="pipeline01.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLATFORMS -->
+  <section id="platforms">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Hardware-aware optimization</div>
+        <h2 class="section-title">Same pipeline. Any silicon.</h2>
+        <p class="section-desc">Choose the platform a pipeline will run on, and GX compiles code tuned to it — not a generic build ported after the fact.</p>
+      </div>
+
+      <div class="platform-strip">
+        <div class="platform-chip bracket"><span class="bl"></span><span class="br"></span><div class="chip-label">full-CPU</div><div class="chip-desc">general compute, no accelerator</div></div>
+        <div class="platform-chip bracket"><span class="bl"></span><span class="br"></span><div class="chip-label">full-GPU</div><div class="chip-desc">parallel inference, high throughput</div></div>
+        <div class="platform-chip bracket"><span class="bl"></span><span class="br"></span><div class="chip-label">CPU–GPU</div><div class="chip-desc">split pre/post-processing and inference</div></div>
+        <div class="platform-chip bracket"><span class="bl"></span><span class="br"></span><div class="chip-label">NPU</div><div class="chip-desc">dedicated neural accelerator</div></div>
+        <div class="platform-chip bracket"><span class="bl"></span><span class="br"></span><div class="chip-label">CPU–NPU</div><div class="chip-desc">edge-optimized, low-power inference</div></div>
+      </div>
+      <p class="platform-note">Target selected once, per pipeline — <b>compilation, memory layout and kernel choice adapt automatically.</b></p>
+    </div>
+  </section>
+
+  <!-- MODEL REGISTRY -->
+  <section id="registry">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Model registry</div>
+        <h2 class="section-title">Every node needs a model. We keep 32, ready.</h2>
+        <p class="section-desc">A production registry of generic and use-case-specific models, trained in-house on millions of samples — drop any of them straight into a GX Studio node, or have our team train the one you actually need.</p>
+      </div>
+
+      <div class="registry-stats bracket">
+        <span class="bl"></span><span class="br"></span>
+        <div class="stat"><div class="stat-num">32</div><div class="stat-label">Production models</div></div>
+        <div class="stat"><div class="stat-num">6</div><div class="stat-label">Model categories</div></div>
+        <div class="stat"><div class="stat-num">7+</div><div class="stat-label">AI modelling engineers</div></div>
+        <div class="stat"><div class="stat-num">M+</div><div class="stat-label">Training samples / model</div></div>
+      </div>
+
+      <div class="category-grid">
+        <div class="category-card bracket"><span class="bl"></span><span class="br"></span>
+          <div class="cat-index">01</div><h4>Detection</h4><p>Locate and classify objects, defects, and events in a frame.</p>
+        </div>
+        <div class="category-card bracket"><span class="bl"></span><span class="br"></span>
+          <div class="cat-index">02</div><h4>Segmentation</h4><p>Pixel-accurate masks for instance and semantic boundaries.</p>
+        </div>
+        <div class="category-card bracket"><span class="bl"></span><span class="br"></span>
+          <div class="cat-index">03</div><h4>Classification</h4><p>Assign labels — product grade, condition, category, state.</p>
+        </div>
+        <div class="category-card bracket"><span class="bl"></span><span class="br"></span>
+          <div class="cat-index">04</div><h4>Keypoints</h4><p>Pose and landmark estimation for structure-aware tasks.</p>
+        </div>
+        <div class="category-card bracket"><span class="bl"></span><span class="br"></span>
+          <div class="cat-index">05</div><h4>OCR</h4><p>Read text, codes, and serials embedded in the scene.</p>
+        </div>
+        <div class="category-card bracket"><span class="bl"></span><span class="br"></span>
+          <div class="cat-index">06</div><h4>Feature extraction</h4><p>Embeddings for retrieval, re-ID, and similarity search.</p>
+        </div>
+      </div>
+
+      <div class="custom-train bracket">
+        <span class="bl"></span><span class="br"></span>
+        <div class="custom-train-text">
+          <div class="eyebrow" style="margin-bottom:12px;">Beyond the registry</div>
+          <h3>No model fits? Our modelling team builds it.</h3>
+          <p>Data engineering, architecture design, and training run by an in-house team of 7+ — for the exact use case, not the closest generic match.</p>
+        </div>
+        <a href="#" class="btn-ghost" style="flex-shrink:0;" onclick="openModal(event,'Discuss Custom Training')">Discuss custom training →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="contact" class="cta-section">
+    <div class="wrap">
+      <div class="eyebrow">Get started</div>
+      <h2 class="cta-title">Bring a vision task. Leave with a pipeline.</h2>
+      <div class="hero-actions">
+        <a href="#" class="btn-primary" onclick="openModal(event,'Book a Demo')">Book a Demo →</a>
+        <a href="#" class="btn-ghost" onclick="openModal(event,'Talk to the Team')">Talk to the team</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-brand"><img src="logo-badge.png" alt="GX-Arc logo" class="brand-badge" id="footLogo"><span>GX-Arc</span></div>
+        <p style="margin-top:14px; color:var(--gray-600); font-size:13px; max-width:260px;">Compose Vision. Create Intelligence.</p>
+      </div>
+      <div class="foot-links">
+        <div class="foot-col"><h5>Product</h5><a href="#products">GX Studio</a><a href="#products">GX Agent</a><a href="#platforms">Platforms</a></div>
+        <div class="foot-col"><h5>Company</h5><a href="#meaning">About</a><a href="#">Careers</a><a href="#" onclick="openModal(event,'Talk to the Team')">Contact</a></div>
+        <div class="foot-col">
+          <h5>Contact</h5>
+          <a href="tel:+919903x4x7x">+91 990x3x4x7x</a>
+          <a href="mailto:infoGX-Arc@gmail.com">infoGX-Arc@gmail.com</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 GX-Arc. All rights reserved.</span>
+      <span>SYSTEM STATUS · ALL PIPELINES NOMINAL</span>
+    </div>
+  </div>
+</footer>
+
+<!-- CONTACT MODAL -->
+<div id="modalOverlay" class="modal-overlay">
+  <div class="modal-panel bracket">
+    <span class="bl"></span><span class="br"></span>
+    <div class="modal-header">
+      <div class="frame-label" id="modalTitle">Talk to the Team</div>
+      <button class="theme-toggle close-btn" onclick="closeModal()" aria-label="Close form">✕</button>
+    </div>
+    <form id="contactForm" class="modal-form" onsubmit="return submitModal(event)">
+      <label>Person name<input type="text" name="person_name" required placeholder="Your full name"></label>
+      <label>Contact number<input type="tel" name="contact_number" required placeholder="+91 ..."></label>
+      <label>Email ID<input type="email" name="email" required placeholder="you@company.com"></label>
+      <label>Company name<input type="text" name="company_name" placeholder="Your company"></label>
+      <label>Type your query / question<textarea name="query" rows="4" required placeholder="What would you like to know?"></textarea></label>
+      <label class="modal-checkbox"><input type="checkbox" name="notify" checked> Notify me by email once the team responds</label>
+      <div class="modal-actions">
+        <button type="submit" class="btn-primary" style="border-radius:2px;">Send</button>
+        <button type="button" class="btn-ghost" onclick="closeModal()">Cancel</button>
+      </div>
+      <p id="modalStatus" class="modal-status"></p>
+    </form>
+  </div>
+</div>
+
+<script>
+  function showViewer(type){
+    const viewer = document.getElementById('viewer');
+    const img = document.getElementById('studioShot');
+    const label = document.getElementById('viewerLabel');
+    const toggleBtn = document.getElementById('themeToggleBtn');
+    const placeholder = document.getElementById('agentPlaceholder');
+
+    viewer.classList.remove('viewer-hidden');
+
+    if(type === 'studio'){
+      img.style.display = 'block';
+      placeholder.style.display = 'none';
+      toggleBtn.style.display = 'flex';
+      img.src = 'studio-dark.png';
+      document.getElementById('toggleIcon').textContent = '☾';
+      document.getElementById('toggleLabel').textContent = 'Dark canvas';
+      label.innerHTML = 'GXP_01 <span>· built in GX Studio</span>';
+    } else {
+      img.style.display = 'none';
+      placeholder.style.display = 'flex';
+      toggleBtn.style.display = 'none';
+      label.innerHTML = 'GXA_01 <span>· built in GX Agent</span>';
+    }
+
+    setTimeout(() => viewer.scrollIntoView({behavior:'smooth', block:'center'}), 30);
+  }
+
+  function closeViewer(){
+    const viewer = document.getElementById('viewer');
+    viewer.classList.add('viewer-hidden');
+    document.getElementById('products').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function openModal(e, title){
+    if(e) e.preventDefault();
+    document.getElementById('modalTitle').textContent = title || 'Talk to the Team';
+    document.getElementById('modalOverlay').classList.add('open');
+    document.getElementById('modalStatus').textContent = '';
+    document.getElementById('modalStatus').className = 'modal-status';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(){
+    document.getElementById('modalOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('modalOverlay').addEventListener('click', function(e){
+    if(e.target === this) closeModal();
+  });
+
+  function submitModal(e){
+    e.preventDefault();
+    const status = document.getElementById('modalStatus');
+    status.textContent = 'Sending…';
+    status.className = 'modal-status';
+    setTimeout(() => {
+      status.textContent = 'Sent — the team will reach out shortly.';
+      status.className = 'modal-status success';
+      setTimeout(() => { closeModal(); e.target.reset(); }, 1400);
+    }, 500);
+    return false;
+  }
+
+  function toggleStudioShot(){
+    const img = document.getElementById('studioShot');
+    const icon = document.getElementById('toggleIcon');
+    const label = document.getElementById('toggleLabel');
+    const isDark = img.src.includes('studio-dark');
+    img.src = isDark ? 'studio-light.png' : 'studio-dark.png';
+    icon.textContent = isDark ? '☀' : '☾';
+    label.textContent = isDark ? 'Light canvas' : 'Dark canvas';
+  }
+  function toggleSiteTheme(){
+    var html = document.documentElement;
+    var current = html.getAttribute('data-theme') || 'dark';
+    var next = current === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    try{ localStorage.setItem('gx-arc-theme', next); }catch(e){}
+    document.getElementById('siteThemeIcon').textContent = next === 'dark' ? '☀' : '☾';
+  }
+  (function(){
+    var current = document.documentElement.getAttribute('data-theme') || 'dark';
+    document.addEventListener('DOMContentLoaded', function(){
+      document.getElementById('siteThemeIcon').textContent = current === 'dark' ? '☀' : '☾';
+    });
+  })();
+</script>
+</body>
+</html>

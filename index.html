@@ -377,6 +377,56 @@
   .cat-index{font-family:var(--mono); font-size:11px; color:var(--gray-600); letter-spacing:.05em;}
   .category-card h4{font-family:var(--disp); font-size:19px; color:var(--white); margin-top:14px; font-weight:600;}
   .category-card p{margin-top:10px; font-size:13.5px; color:var(--gray-500); line-height:1.55;}
+  .category-card{cursor:pointer; transition:all .25s ease;}
+  .category-card.active{border-color:var(--white) !important; background:var(--panel-2);}
+  .category-card .cat-arrow{
+    position:absolute; top:28px; right:22px;
+    font-family:var(--mono); font-size:13px; color:var(--gray-600);
+    transition:transform .25s ease, color .25s ease;
+  }
+  .category-card.active .cat-arrow{transform:rotate(90deg); color:var(--white);}
+
+  .model-detail{
+    max-height:0; overflow:hidden; transition:max-height .4s ease, opacity .3s ease;
+    opacity:0; grid-column:1 / -1;
+  }
+  .model-detail.open{max-height:1000px; opacity:1;}
+  .model-detail-inner{
+    border:1px solid var(--line-soft); border-top:none; background:var(--panel);
+    position:relative;
+  }
+  .md-header{
+    padding:24px 32px 20px; border-bottom:1px solid var(--line-soft);
+  }
+  .md-subtitle{
+    font-family:var(--mono); font-size:11.5px; color:var(--gray-500);
+    letter-spacing:.04em; text-transform:uppercase; margin-bottom:8px;
+  }
+  .md-body{padding:24px 32px 28px;}
+  .md-model-list{
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:0;
+  }
+  .md-model{
+    display:flex; align-items:center; gap:10px;
+    padding:12px 0; border-bottom:1px solid var(--line-soft);
+    font-size:13.5px; color:var(--gray-100); line-height:1.4;
+  }
+  .md-model::before{
+    content:''; width:5px; height:5px; border-radius:1px; border:1px solid var(--gray-600);
+    flex-shrink:0;
+  }
+  .md-best{
+    margin-top:22px; padding:18px 24px;
+    border:1px solid var(--line-soft); background:var(--panel-2);
+    font-size:13.5px; color:var(--gray-300); line-height:1.5;
+  }
+  .md-best b{color:var(--white); font-family:var(--mono); font-size:11px; letter-spacing:.04em; text-transform:uppercase; font-weight:500;}
+  @media (max-width:860px){
+    .md-model-list{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:560px){
+    .md-model-list{grid-template-columns:1fr;}
+  }
 
   .custom-train{
     margin-top:56px; border:1px solid var(--line-soft); background:var(--panel);
@@ -804,23 +854,168 @@ pipeline.run(stream=<span class="c3">"rtsp://cam-04"</span>)</div>
       </div>
 
       <div class="category-grid">
-        <div class="category-card bracket"><span class="bl"></span><span class="br"></span>
-          <div class="cat-index">01</div><h4>Detection</h4><p>Locate and classify objects, defects, and events in a frame.</p>
+        <!-- Detection -->
+        <div class="category-card bracket" onclick="toggleModel('det')" id="mcard-det"><span class="bl"></span><span class="br"></span>
+          <div class="cat-index">01</div><h4>Detection</h4><p>Locate and classify objects, defects, and events in a frame.</p><span class="cat-arrow">→</span>
         </div>
-        <div class="category-card bracket"><span class="bl"></span><span class="br"></span>
-          <div class="cat-index">02</div><h4>Segmentation</h4><p>Pixel-accurate masks for instance and semantic boundaries.</p>
+        <!-- Segmentation -->
+        <div class="category-card bracket" onclick="toggleModel('seg')" id="mcard-seg"><span class="bl"></span><span class="br"></span>
+          <div class="cat-index">02</div><h4>Segmentation</h4><p>Pixel-accurate masks for instance and semantic boundaries.</p><span class="cat-arrow">→</span>
         </div>
-        <div class="category-card bracket"><span class="bl"></span><span class="br"></span>
-          <div class="cat-index">03</div><h4>Classification</h4><p>Assign labels — product grade, condition, category, state.</p>
+        <!-- Classification -->
+        <div class="category-card bracket" onclick="toggleModel('cls')" id="mcard-cls"><span class="bl"></span><span class="br"></span>
+          <div class="cat-index">03</div><h4>Classification</h4><p>Assign labels — product grade, condition, category, state.</p><span class="cat-arrow">→</span>
         </div>
-        <div class="category-card bracket"><span class="bl"></span><span class="br"></span>
-          <div class="cat-index">04</div><h4>Keypoints</h4><p>Pose and landmark estimation for structure-aware tasks.</p>
+
+        <!-- Detection detail (spans full row) -->
+        <div class="model-detail" id="mdetail-det">
+          <div class="model-detail-inner bracket">
+            <span class="bl"></span><span class="br"></span>
+            <div class="md-header">
+              <div class="md-subtitle">In-house detection models</div>
+            </div>
+            <div class="md-body">
+              <div class="md-model-list">
+                <div class="md-model">Person</div>
+                <div class="md-model">Vehicle — car, truck, bus, motorcycle, bicycle</div>
+                <div class="md-model">Face & Hand</div>
+                <div class="md-model">Road Signs & Traffic Signals</div>
+                <div class="md-model">Tablet & Capsule</div>
+                <div class="md-model">PPE — vest, gloves, safety shoes, goggles, helmet</div>
+                <div class="md-model">Fire & Smoke</div>
+                <div class="md-model">License Plate</div>
+                <div class="md-model">Tools & Equipment</div>
+                <div class="md-model">Barcode & QR Code</div>
+              </div>
+              <div class="md-best"><b>Best for</b><br>Detect the objects, people, assets, and events that matter to your application.</div>
+            </div>
+          </div>
         </div>
-        <div class="category-card bracket"><span class="bl"></span><span class="br"></span>
-          <div class="cat-index">05</div><h4>OCR</h4><p>Read text, codes, and serials embedded in the scene.</p>
+
+        <!-- Segmentation detail -->
+        <div class="model-detail" id="mdetail-seg">
+          <div class="model-detail-inner bracket">
+            <span class="bl"></span><span class="br"></span>
+            <div class="md-header">
+              <div class="md-subtitle">In-house segmentation models</div>
+            </div>
+            <div class="md-body">
+              <div class="md-model-list">
+                <div class="md-model">Person</div>
+                <div class="md-model">Vehicle</div>
+                <div class="md-model">Road Signs & Traffic Signals</div>
+                <div class="md-model">Tablet & Capsule</div>
+                <div class="md-model">Industrial Components</div>
+                <div class="md-model">Road & Lane Areas</div>
+                <div class="md-model">Fire & Smoke</div>
+              </div>
+              <div class="md-best"><b>Best for</b><br>Understand exactly where an object or region exists — down to the pixel.</div>
+            </div>
+          </div>
         </div>
-        <div class="category-card bracket"><span class="bl"></span><span class="br"></span>
-          <div class="cat-index">06</div><h4>Feature extraction</h4><p>Embeddings for retrieval, re-ID, and similarity search.</p>
+
+        <!-- Classification detail -->
+        <div class="model-detail" id="mdetail-cls">
+          <div class="model-detail-inner bracket">
+            <span class="bl"></span><span class="br"></span>
+            <div class="md-header">
+              <div class="md-subtitle">In-house classification models</div>
+            </div>
+            <div class="md-body">
+              <div class="md-model-list">
+                <div class="md-model">Face — Mask / No Mask</div>
+                <div class="md-model">Defect / No Defect</div>
+                <div class="md-model">Damaged / Undamaged</div>
+                <div class="md-model">Good / Reject</div>
+                <div class="md-model">PPE Compliance</div>
+                <div class="md-model">Tablet / Capsule Type</div>
+                <div class="md-model">Road Sign Type</div>
+              </div>
+              <div class="md-best"><b>Best for</b><br>Turn visual observations into actionable labels, grades, and decisions.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Keypoints -->
+        <div class="category-card bracket" onclick="toggleModel('kpt')" id="mcard-kpt"><span class="bl"></span><span class="br"></span>
+          <div class="cat-index">04</div><h4>Keypoints</h4><p>Pose and landmark estimation for structure-aware tasks.</p><span class="cat-arrow">→</span>
+        </div>
+        <!-- OCR -->
+        <div class="category-card bracket" onclick="toggleModel('ocr')" id="mcard-ocr"><span class="bl"></span><span class="br"></span>
+          <div class="cat-index">05</div><h4>OCR</h4><p>Read text, codes, and serials embedded in the scene.</p><span class="cat-arrow">→</span>
+        </div>
+        <!-- Feature extraction -->
+        <div class="category-card bracket" onclick="toggleModel('feat')" id="mcard-feat"><span class="bl"></span><span class="br"></span>
+          <div class="cat-index">06</div><h4>Feature extraction</h4><p>Embeddings for retrieval, re-ID, and similarity search.</p><span class="cat-arrow">→</span>
+        </div>
+
+        <!-- Keypoints detail -->
+        <div class="model-detail" id="mdetail-kpt">
+          <div class="model-detail-inner bracket">
+            <span class="bl"></span><span class="br"></span>
+            <div class="md-header">
+              <div class="md-subtitle">In-house keypoint models</div>
+            </div>
+            <div class="md-body">
+              <div class="md-model-list">
+                <div class="md-model">Human Pose</div>
+                <div class="md-model">Face Landmarks</div>
+                <div class="md-model">Hand Landmarks</div>
+                <div class="md-model">Object Keypoints</div>
+                <div class="md-model">Industrial Part Alignment</div>
+              </div>
+              <div class="md-best"><b>Best for</b><br>Go beyond detection with precise structural understanding.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OCR detail -->
+        <div class="model-detail" id="mdetail-ocr">
+          <div class="model-detail-inner bracket">
+            <span class="bl"></span><span class="br"></span>
+            <div class="md-header">
+              <div class="md-subtitle">In-house OCR models</div>
+            </div>
+            <div class="md-body">
+              <div class="md-model-list">
+                <div class="md-model">License Plate Number</div>
+                <div class="md-model">Road Signs & Boards</div>
+                <div class="md-model">Product Labels</div>
+                <div class="md-model">Serial Numbers</div>
+                <div class="md-model">Batch / Lot Numbers</div>
+                <div class="md-model">Expiry Dates</div>
+                <div class="md-model">Manufacturing Dates</div>
+                <div class="md-model">Barcodes</div>
+                <div class="md-model">QR Codes</div>
+                <div class="md-model">Meter / Gauge Readings</div>
+                <div class="md-model">Industrial Markings</div>
+                <div class="md-model">Packaging Text</div>
+              </div>
+              <div class="md-best"><b>Best for</b><br>Convert real-world text into structured, machine-readable data.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature extraction detail -->
+        <div class="model-detail" id="mdetail-feat">
+          <div class="model-detail-inner bracket">
+            <span class="bl"></span><span class="br"></span>
+            <div class="md-header">
+              <div class="md-subtitle">In-house feature extraction models</div>
+            </div>
+            <div class="md-body">
+              <div class="md-model-list">
+                <div class="md-model">Person Re-ID</div>
+                <div class="md-model">Face Embeddings</div>
+                <div class="md-model">Hand Embeddings</div>
+                <div class="md-model">Vehicle Embeddings</div>
+                <div class="md-model">Tablet & Capsule Embeddings</div>
+                <div class="md-model">Generic Object Embeddings</div>
+                <div class="md-model">Visual Similarity Embeddings</div>
+              </div>
+              <div class="md-best"><b>Best for</b><br>Transform visual content into embeddings for search, matching, retrieval, and re-identification.</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -992,6 +1187,22 @@ pipeline.run(stream=<span class="c3">"rtsp://cam-04"</span>)</div>
     if(!wasOpen){
       detail.classList.add('open');
       chip.classList.add('active');
+      setTimeout(function(){ detail.scrollIntoView({behavior:'smooth', block:'nearest'}); }, 80);
+    }
+  }
+
+  function toggleModel(id){
+    var detail = document.getElementById('mdetail-' + id);
+    var card = document.getElementById('mcard-' + id);
+    var wasOpen = detail.classList.contains('open');
+
+    // close all
+    document.querySelectorAll('.model-detail').forEach(function(d){ d.classList.remove('open'); });
+    document.querySelectorAll('.category-card').forEach(function(c){ c.classList.remove('active'); });
+
+    if(!wasOpen){
+      detail.classList.add('open');
+      card.classList.add('active');
       setTimeout(function(){ detail.scrollIntoView({behavior:'smooth', block:'nearest'}); }, 80);
     }
   }

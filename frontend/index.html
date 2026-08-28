@@ -561,11 +561,12 @@ pipeline.run(stream=<span class="c3">"rtsp://cam-04"</span>)</div>
       <button class="theme-toggle close-btn" onclick="closeModal()" aria-label="Close form">✕</button>
     </div>
     <form id="contactForm" class="modal-form" onsubmit="return submitModal(event)">
-      <label>Person name<input type="text" name="person_name" required placeholder="Your full name"></label>
-      <label>Contact number<input type="tel" name="contact_number" required placeholder="+91 ..."></label>
-      <label>Email ID<input type="email" name="email" required placeholder="you@company.com"></label>
-      <label>Company name<input type="text" name="company_name" placeholder="Your company"></label>
-      <label>Type your query / question<textarea name="query" rows="4" required placeholder="What would you like to know?"></textarea></label>
+      <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <label>Person name<input type="text" name="person_name" required placeholder="Your full name" maxlength="200"></label>
+      <label>Contact number<input type="tel" name="contact_number" required placeholder="+91 ..." maxlength="30"></label>
+      <label>Email ID<input type="email" name="email" required placeholder="you@company.com" maxlength="254"></label>
+      <label>Company name<input type="text" name="company_name" placeholder="Your company" maxlength="200"></label>
+      <label>Type your query / question<textarea name="query" rows="4" required placeholder="What would you like to know?" maxlength="5000"></textarea></label>
       <label class="modal-checkbox"><input type="checkbox" name="notify" checked> Notify me by email once the team responds</label>
       <div class="modal-actions">
         <button type="submit" class="btn-primary" style="border-radius:2px;">Send</button>

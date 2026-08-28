@@ -11,14 +11,21 @@ const requestAccessRouter = require('./routes/requestAccess');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-/* ── CORS ── */
+/* ── CORS — strict origin check ── */
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
   .split(',')
   .map(o => o.trim())
   .filter(Boolean);
 
 app.use(cors({
-  origin: allowedOrigins.length ? allowedOrigins : '*',
+  origin: function (origin, callback) {
+    /* Allow same-origin requests (origin is undefined for server-to-server / curl) */
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST'],
 }));
 
@@ -41,14 +48,20 @@ app.use(express.static(path.join(__dirname, '..', 'frontend')));
 app.use('/api/contact', formLimiter, contactRouter);
 app.use('/api/request-access', formLimiter, requestAccessRouter);
 
-/* ── Health check ── */
+/* ── Health check (no timestamp — avoids leaking server clock info) ── */
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok' });
 });
 
 /* ── SPA fallback ── */
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
+});
+
+/* ── Global error handler — never leak stack traces ── */
+app.use((err, _req, res, _next) => {
+  console.error('[unhandled]', err.message);
+  res.status(500).json({ error: 'Internal server error.' });
 });
 
 /* ── Start ── */
